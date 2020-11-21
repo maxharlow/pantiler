@@ -1,0 +1,26 @@
+{
+    "name": "pantiler",
+    "description": "Convert geographic data into vector map tiles",
+    "version": "1.0.0",
+    "author": "Max Harlow <contact@maxharlow.com> (https://maxharlow.com/)",
+    "license": "Apache-2.0",
+    "type": "module",
+    "preferGlobal": true,
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/maxharlow/pantiler.git"
+    },
+    "dependencies": {
+        "axios": "0.21.x",
+        "fontnik": "0.6.x",
+        "fs-extra": "9.0.x",
+        "unzipper": "0.10.x",
+        "yaml": "1.10.x",
+        "yargs": "16.1.x",
+        "zod": "1.11.x"
+    },
+    "main": "pantiler.js",
+    "bin": {
+        "pantiler": "./bin.js"
+    }
+}
