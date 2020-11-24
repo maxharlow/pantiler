@@ -14,6 +14,7 @@
         "axios": "0.21.x",
         "fontnik": "0.6.x",
         "fs-extra": "9.0.x",
+        "gdal-next": "2.5.x",
         "unzipper": "0.10.x",
         "yaml": "1.10.x",
         "yargs": "16.1.x",

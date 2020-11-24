@@ -5,6 +5,7 @@ import Zod from 'zod'
 import Axios from 'axios'
 import Unzipper from 'unzipper'
 import Fontnik from 'fontnik'
+import Gdal from 'gdal-next'
 
 function setup(directory, cache = '.pantiler-cache', clearCache = false, alert = () => {}) {
 
@@ -23,11 +24,13 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
             sources: Zod.array(Zod.object({
                 name: Zod.string(),
                 system: Zod.string(),
+                fieldLongitude: Zod.string().optional(), // only needed for CSV point inputs
+                fieldLatitude: Zod.string().optional(), // only needed for CSV point inputs
                 inputs: Zod.array(inputSchema),
                 outputs: Zod.array(Zod.object({
                     name: Zod.string(),
                     layer: Zod.string(),
-                    fields: Zod.array(Zod.string()),
+                    fields: Zod.object(),
                     additional: Zod.object().optional() // arbitrary extra data which can be included
                 }))
             })),
@@ -56,7 +59,7 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
                     start: range.start,
                     end: range.end
                 })
-                await FSExtra.writeFile(`${directory}/${range.start}-${range.end}.pbf`, result)
+                await FSExtra.writeFile(`${location}/${range.start}-${range.end}.pbf`, result)
             })
             await Promise.all(conversions)
             alert('Done', 'glyphs', font.name)
@@ -130,44 +133,53 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
         return Promise.all(extractions)
     }
 
-    async function convert(name, system, inputs, outputs) {
+    async function convert(name, system, fieldLongitude, fieldLatitude, inputs, outputs) {
         alert('Converting', name)
+        const reprojection = new Gdal.CoordinateTransformation(Gdal.SpatialReference.fromProj4(system), Gdal.SpatialReference.fromProj4('+init=epsg:4326'))
         return outputs.reduce(async (previousOutput, output) => {
             await previousOutput
             const outputSpecifier = outputs.length > 1 ? `-${output.name}` : ''
             const file = `${cache}/${name}${outputSpecifier}.geo.json`
             const fileExists = await FSExtra.pathExists(file)
-            return inputs.reduce(async (previousInput, input, i) => {
-                await previousInput
-                if (fileExists) {
-                    alert('Using cache', name, input.name + outputSpecifier)
-                    return
-                }
-                const fields = [
-                    ...output.fields,
-                    ...(input.path.endsWith('gpkg') ? ['geom'] : input.path.endsWith('json') ? ['geometry'] : [])
-                ]
-                const options = [
-                    `s_srs ${system}`,
-                    't_srs EPSG:4326',
-                    'f GeoJSON',
-                    ...(output.fields.length > 0 ? ['sql "select ' + fields.join(',') + ` from ${output.layer}"`] : []),
-                    ...(output.conversion || []),
-                    ...(i === 0 ? [] : ['update', 'append'])
-                ]
-                const args = options.map(x => `-${x}`).join(' ')
-                const logs = await Util.promisify(ChildProcess.exec)(`ogr2ogr ${args} ${file} ${input.path}`)
-                if (logs.stderr) logs.stderr.trim().split('\n').forEach(message => {
-                    alert(message, name, input.name + outputSpecifier)
-                })
-                if (output.additional) {
-                    const collection = await FSExtra.readJson(file)
-                    const features = collection.features.map(feature => ({ ...feature, ...output.additional }))
-                    await FSExtra.writeJson(file, { ...collection, features })
-                }
-                alert('Done', name, input.name + outputSpecifier)
+            if (fileExists) {
+                alert('Using cache', name, output.name)
                 return
-            }, Promise.resolve())
+            }
+            const outputData = Gdal.open(file, 'w', 'GeoJSON')
+            const outputLayer = outputData.layers.create(`${name}${outputSpecifier}`, null, Gdal.wkbUnknown)
+            const outputFieldDefinitions = Object.keys(output.fields).map(key => {
+                return new Gdal.FieldDefn(key, Gdal.OFTString)
+            })
+            outputLayer.fields.add(outputFieldDefinitions)
+            inputs.forEach(input => {
+                const inputData = Gdal.open(input.path)
+                const inputLayer = inputData.layers.get(output.layer)
+                inputLayer.features.forEach(feature => {
+                    const outputFeature = new Gdal.Feature(outputLayer)
+                    const outputFields = Object.entries(output.fields).map(([key, value]) => {
+                        try {
+                            return [key, feature.fields.get(value)]
+                        }
+                        catch (e) {
+                            return [key, null]
+                        }
+                    })
+                    outputFeature.fields.set(Object.fromEntries(outputFields))
+                    const outputGeometry = (fieldLongitude && fieldLatitude)
+                        ? Gdal.Geometry.fromGeoJson({ type: 'Point', coordinates: [Number(feature.fields.get(fieldLongitude)), Number(feature.fields.get(fieldLatitude))] })
+                        : feature.getGeometry()
+                    outputGeometry.transform(reprojection) // mutates in-place
+                    outputFeature.setGeometry(outputGeometry)
+                    outputLayer.features.add(outputFeature)
+                })
+            })
+            outputData.close()
+            if (output.additional) {
+                const collection = await FSExtra.readJson(file)
+                const features = collection.features.map(feature => ({ ...feature, ...output.additional }))
+                await FSExtra.writeJson(file, { ...collection, features })
+            }
+            alert('Done', name, output.name)
         }, Promise.resolve())
     }
 
@@ -236,7 +248,7 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
             await previous
             const archives = await fetch(source.name, source.inputs)
             const inputs = await extract(source.name, archives)
-            return convert(source.name, source.system, inputs, source.outputs)
+            return convert(source.name, source.system, source.fieldLongitude, source.fieldLatitude, inputs, source.outputs)
         }, Promise.resolve())
         const metadata = await tile(tiledata.sources, tiledata.zoomFrom, tiledata.zoomTo)
         await style(metadata, tiledata.styling, tiledata.host)
