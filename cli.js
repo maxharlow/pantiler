@@ -4,10 +4,15 @@ import FSExtra from 'fs-extra'
 import Yaml from 'yaml'
 import pantiler from './pantiler.js'
 
-function alert(message, source, section) {
-    if (source && section) console.error(`  ${message}: ${section}`)
-    else if (source) console.error(`${message}: ${source}...`)
-    else console.error(message)
+function alert({ process, input, output, message }) {
+    const elements = [
+        process,
+        input && ` ${input}`,
+        output && ` -> ${output}`,
+        (process || input || output) && ': ',
+        message
+    ]
+    console.error(elements.filter(x => x).join(''))
 }
 
 async function setup() {

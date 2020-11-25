@@ -40,9 +40,13 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
     }
 
     async function englyph(fonts) {
-        alert('Generating glyphs...')
-        await fonts.reduce(async (previousFont, font) => {
-            await previousFont
+        await fonts.reduce(async (a, font) => {
+            await a
+            alert({
+                process: 'englyphing',
+                input: font.name,
+                message: 'starting'
+            })
             const location = `${directory}/glyphs/${font.name}`
             await FSExtra.ensureDir(location)
             const response = await Axios({
@@ -59,15 +63,19 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
                     start: range.start,
                     end: range.end
                 })
-                await FSExtra.writeFile(`${location}/${range.start}-${range.end}.pbf`, result)
+                return FSExtra.writeFile(`${location}/${range.start}-${range.end}.pbf`, result)
             })
             await Promise.all(conversions)
-            alert('Done', 'glyphs', font.name)
+            alert({
+                process: 'englyphing',
+                input: font.name,
+                message: 'done'
+            })
+            return
         }, Promise.resolve())
     }
 
     async function fetch(name, inputs) {
-        alert('Fetching', name)
         const downloads = inputs.map(async input => {
             const inputSpecifier = inputs.length > 1 ? `-${input.name}` : ''
             if (!input.url && !input.path) throw new Error(`${name}${inputSpecifier}: need to specify either url or path`)
@@ -75,14 +83,27 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
             const file = `${cache}/${name}${inputSpecifier}.${extension}`
             const fileExists = await FSExtra.pathExists(file)
             if (fileExists) {
-                alert('Using cache', name, input.name)
+                alert({
+                    process: 'fetching',
+                    input: name + inputSpecifier,
+                    message: 'using cache'
+                })
                 return { name: input.name, path: file }
             }
             if (input.path) {
                 await FSExtra.ensureSymlink(input.path, file)
-                alert('Done', name, input.name)
+                alert({
+                    process: 'fetching',
+                    input: name +  inputSpecifier,
+                    message: 'linked'
+                })
                 return { name: input.name, path: file }
             }
+            alert({
+                process: 'fetching',
+                input: name + inputSpecifier,
+                message: 'starting'
+            })
             const response = await Axios({
                 url: input.url,
                 responseType: 'stream'
@@ -93,17 +114,19 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
                 writer.on('error', reject)
                 writer.on('close', resolve)
             })
-            alert('Done', name, input.name)
+            alert({
+                process: 'fetching',
+                input: name + inputSpecifier,
+                message: 'done'
+            })
             return { name: input.name, path: file }
         })
         return Promise.all(downloads)
     }
 
     async function extract(name, archives) {
-        alert('Extracting', name)
         const extractions = archives.map(async archive => {
             if (!archive.path.endsWith('zip')) {
-                alert('Using cache', name, archive.name)
                 return archive // no extraction needed
             }
             const archiveSpecifier = archives.length > 1 ? `-${archive.name}` : ''
@@ -114,15 +137,31 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
                 const file = `${cache}/${name}${archiveSpecifier}.${extension}`
                 const fileExists = await FSExtra.pathExists(file)
                 if (fileExists) {
-                    alert('Using cache', name, archive.name + (entries.length > 1 ? `/${extension}` : ''))
+                    alert({
+                        process: 'extracting',
+                        input: name + archiveSpecifier,
+                        ...(entries.length > 1 ? { output: name + (entries.length > 1 ? `/${extension}` : '') } : {}),
+                        message: 'using cache'
+                    })
                     return { name: archive.name, path: file }
                 }
+                alert({
+                    process: 'extracting',
+                    input: name + archiveSpecifier,
+                    ...(entries.length > 1 ? { output: name + (entries.length > 1 ? `/${extension}` : '') } : {}),
+                    message: 'starting'
+                })
                 const writer = entry.stream().pipe(FSExtra.createWriteStream(file))
                 await new Promise((resolve, reject) => {
                     writer.on('error', reject)
                     writer.on('finish', resolve)
                 })
-                alert('Done', name, archive.name)
+                alert({
+                    process: 'extracting',
+                    input: name + archiveSpecifier,
+                    ...(entries.length > 1 ? { output: name + (entries.length > 1 ? `/${extension}` : '') } : {}),
+                    message: 'done'
+                })
                 return { name: archive.name, path: file }
             })
             const extracted = await Promise.all(extractions)
@@ -134,7 +173,6 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
     }
 
     async function convert(name, system, fieldLongitude, fieldLatitude, inputs, outputs) {
-        alert('Converting', name)
         const reprojection = new Gdal.CoordinateTransformation(Gdal.SpatialReference.fromProj4(system), Gdal.SpatialReference.fromProj4('+init=epsg:4326'))
         return outputs.reduce(async (previousOutput, output) => {
             await previousOutput
@@ -142,7 +180,12 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
             const file = `${cache}/${name}${outputSpecifier}.geo.json`
             const fileExists = await FSExtra.pathExists(file)
             if (fileExists) {
-                alert('Using cache', name, output.name)
+                alert({
+                    process: 'converting',
+                    input: name,
+                    ...(inputs.length > 1 ? { output: output.name } : outputs.length > 1 ? { output: name + outputSpecifier } : {}),
+                    message: 'using cache'
+                })
                 return
             }
             const outputData = Gdal.open(file, 'w', 'GeoJSON')
@@ -152,6 +195,12 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
             })
             outputLayer.fields.add(outputFieldDefinitions)
             inputs.forEach(input => {
+                alert({
+                    process: 'converting',
+                    input: name + (inputs.length > 1 ? `-${input.name}` : ''),
+                    ...(inputs.length > 1 ? { output: output.name } : outputs.length > 1 ? { output: name + outputSpecifier } : {}),
+                    message: 'starting'
+                })
                 const inputData = Gdal.open(input.path)
                 const inputLayer = inputData.layers.get(output.layer)
                 inputLayer.features.forEach(feature => {
@@ -172,6 +221,12 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
                     outputFeature.setGeometry(outputGeometry)
                     outputLayer.features.add(outputFeature)
                 })
+                alert({
+                    process: 'converting',
+                    input: name + (inputs.length > 1 ? `-${input.name}` : ''),
+                    ...(inputs.length > 1 ? { output: output.name } : outputs.length > 1 ? { output: name + outputSpecifier } : {}),
+                    message: 'done'
+                })
             })
             outputData.close()
             if (output.additional) {
@@ -179,12 +234,11 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
                 const features = collection.features.map(feature => ({ ...feature, ...output.additional }))
                 await FSExtra.writeJson(file, { ...collection, features })
             }
-            alert('Done', name, output.name)
         }, Promise.resolve())
     }
 
     async function tile(sources, zoomFrom, zoomTo) {
-        alert('Tiling...')
+        alert({ process: 'tiling', message: 'starting' })
         const sourcelist = sources.flatMap(source => {
             return source.outputs.map(output => {
                 const outputSpecifier = source.outputs.length > 1 ? `-${output.name}` : ''
@@ -202,15 +256,15 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
         const args = options.map(x => `--${x}`).join(' ')
         const logs = await Util.promisify(ChildProcess.exec)(`tippecanoe ${args}`)
         if (logs.stderr) logs.stderr.trim().split('\n').forEach(message => {
-            alert(message)
+            alert({ process: 'tiling', message })
         })
         const metadata = await FSExtra.readJson(`${directory}/metadata.json`)
         await FSExtra.remove(`${directory}/metadata.json`)
+        alert({ process: 'tiling', message: 'done' })
         return metadata
     }
 
     async function style(metadata, styling, host) {
-        alert('Styling...')
         const styles = {
             version: 8,
             metadata: {
@@ -228,13 +282,14 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
             },
             ...styling
         }
+        alert({ process: 'styling', message: 'done' })
         return FSExtra.writeJson(`${directory}/style.json`, styles)
     }
 
     async function cleanup(clearCache) {
         if (!clearCache) return
-        alert('Removing cache directory...')
         await FSExtra.remove(cache)
+        alert({ process: 'cleaning up', message: 'done' })
     }
 
     async function run(tiledata) {
@@ -253,7 +308,7 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
         const metadata = await tile(tiledata.sources, tiledata.zoomFrom, tiledata.zoomTo)
         await style(metadata, tiledata.styling, tiledata.host)
         await cleanup(clearCache)
-        alert('Done!')
+        alert({ message: 'done' })
     }
 
     return run
