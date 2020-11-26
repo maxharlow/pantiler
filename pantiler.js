@@ -29,7 +29,7 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
                 inputs: Zod.array(inputSchema),
                 outputs: Zod.array(Zod.object({
                     name: Zod.string(),
-                    layer: Zod.string(),
+                    layer: Zod.string().optional(),
                     fields: Zod.object().optional(),
                     additional: Zod.object().optional() // arbitrary extra data which can be included
                 }))
@@ -202,7 +202,7 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
                     message: 'starting'
                 })
                 const inputData = Gdal.open(input.path)
-                const inputLayer = inputData.layers.get(output.layer)
+                const inputLayer = inputData.layers.get(output.layer || 0)
                 inputLayer.features.forEach(feature => {
                     const outputFeature = new Gdal.Feature(outputLayer)
                     const outputFields = Object.entries(output.fields || {}).map(([key, value]) => {
