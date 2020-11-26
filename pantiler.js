@@ -14,7 +14,7 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
             name: Zod.string(),
             url: Zod.string().url().optional(), // otherwise use path
             path: Zod.string().optional(), // otherwise use url
-            format: Zod.string().optional() // if the url/path doesn't have an extension, give it here
+            format: Zod.string().optional()
         })
         const schema = Zod.object({
             host: Zod.string().url(),
@@ -24,14 +24,15 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
             sources: Zod.array(Zod.object({
                 name: Zod.string(),
                 system: Zod.string(),
-                fieldLongitude: Zod.string().optional(), // only needed for CSV point inputs
-                fieldLatitude: Zod.string().optional(), // only needed for CSV point inputs
+                fieldLongitude: Zod.string().optional(),
+                fieldLatitude: Zod.string().optional(),
                 inputs: Zod.array(inputSchema),
                 outputs: Zod.array(Zod.object({
                     name: Zod.string(),
                     layer: Zod.string().optional(),
                     fields: Zod.object().optional(),
-                    additional: Zod.object().optional() // arbitrary extra data which can be included
+                    zoomMin: Zod.number().optional(),
+                    zoomMax: Zod.number().optional()
                 }))
             })),
             styling: Zod.object() // not attempting to validate this
@@ -167,7 +168,7 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
             const extracted = await Promise.all(extractions)
             if (extracted.length === 1) return extracted[0]
             else if (extracted.find(file => file.path.endsWith('shp'))) return extracted.find(file => file.path.endsWith('shp'))
-            else throw new Error(`${name}${archiveSpecifier}: archive has multiple files, unclear which is main`)
+            else throw new Error(`${name}${archiveSpecifier}: archive has multiple files, unclear which to use`)
         })
         return Promise.all(extractions)
     }
@@ -229,9 +230,13 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
                 })
             })
             outputData.close()
-            if (output.additional) {
+            if (output.zoomMin || output.zoomMax) {
                 const collection = await FSExtra.readJson(file)
-                const features = collection.features.map(feature => ({ ...feature, ...output.additional }))
+                const tippecanoe = {
+                    ...(output.zoomMin ? { minzoom: output.zoomMin } : {}),
+                    ...(output.zoomMax ? { maxzoom: output.zoomMax } : {})
+                }
+                const features = collection.features.map(feature => ({ ...feature, tippecanoe }))
                 await FSExtra.writeJson(file, { ...collection, features })
             }
         }, Promise.resolve())
