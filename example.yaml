@@ -1,0 +1,76 @@
+host: http://localhost:8080/tiles
+
+zoomFrom: 12
+zoomTo: 15
+
+fonts:
+  - name: opensans-regular
+    url: https://github.com/google/fonts/raw/master/apache/opensans/OpenSans-Regular.ttf
+
+sources:
+  - name: openmap
+    system: '+init=epsg:27700 +proj=axisswap +order=2,1'
+    inputs:
+      - name: gb
+        url: 'https://osdatahubapi.os.uk/downloads/v1/products/OpenMapLocal/downloads?redirect&area=GB&format=GeoPackage'
+        format: zip
+    outputs:
+      - name: water-tidal
+        layer: TidalWater
+      - name: water-surface
+        layer: SurfaceWater_Area
+      - name: roads
+        layer: Road
+        fields:
+            name: distinctiveName
+      - name: railway-tracks
+        layer: RailwayTrack
+
+styling:
+    layers:
+      - id: background
+        type: background
+        paint:
+            background-color: '#e8eaed'
+      - id: water-tidal
+        type: fill
+        source: primary
+        source-layer: water-tidal
+        paint:
+            fill-color: '#a2c0f4'
+      - id: water-surface
+        type: fill
+        source: primary
+        source-layer: water-surface
+        paint:
+            fill-color: '#a2c0f4'
+      - id: roads
+        type: line
+        source: primary
+        source-layer: roads
+        layout:
+            line-join: round
+            line-cap: round
+        paint:
+            line-color: '#ffffff'
+            line-width: 2
+      - id: road-names
+        type: symbol
+        source: primary
+        source-layer: roads
+        minzoom: 14
+        layout:
+            symbol-placement: line
+            text-field: '{name}'
+            text-font:
+              - opensans-regular
+            text-size: 10
+        paint:
+            text-color: '#697276'
+      - id: railway-tracks
+        type: line
+        source: primary
+        source-layer: railway-tracks
+        paint:
+            line-color: '#dbdddf'
+            line-width: 1.5

@@ -95,7 +95,7 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
                 await FSExtra.ensureSymlink(input.path, file)
                 alert({
                     process: 'fetching',
-                    input: name +  inputSpecifier,
+                    input: name + inputSpecifier,
                     message: 'linked'
                 })
                 return { name: input.name, path: file }

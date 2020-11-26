@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8"/>
+        <title>Tile preview</title>
+        <script src="https://www.unpkg.com/mapbox-gl@1.13/dist/mapbox-gl.js"></script>
+        <link rel="stylesheet" href="https://www.unpkg.com/mapbox-gl@1.13/dist/mapbox-gl.css"/>
+        <style>
+            body { margin: 0; }
+            #map { position: absolute; width: 100%; height: 100%; }
+        </style>
+    </head>
+    <body>
+        <div id="map"></div>
+        <script>
+            new mapboxgl.Map({
+                container: 'map',
+                style: '/tiles/style.json',
+                center: [-0.1, 51.5],
+                zoom: 12,
+                minZoom: 12,
+                maxZoom: 15
+            })
+        </script>
+    </body>
+</html>
