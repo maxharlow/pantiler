@@ -184,7 +184,7 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
                 alert({
                     process: 'converting',
                     input: name,
-                    ...(inputs.length > 1 ? { output: output.name } : outputs.length > 1 ? { output: name + outputSpecifier } : {}),
+                    ...(outputs.length > 1 || inputs.length > 1 ? { output: name + outputSpecifier } : {}),
                     message: 'using cache'
                 })
                 return
@@ -199,7 +199,7 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
                 alert({
                     process: 'converting',
                     input: name + (inputs.length > 1 ? `-${input.name}` : ''),
-                    ...(inputs.length > 1 ? { output: output.name } : outputs.length > 1 ? { output: name + outputSpecifier } : {}),
+                    ...(outputs.length > 1 || inputs.length > 1 ? { output: name + outputSpecifier } : {}),
                     message: 'starting'
                 })
                 const inputData = Gdal.open(input.path)
@@ -225,7 +225,7 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
                 alert({
                     process: 'converting',
                     input: name + (inputs.length > 1 ? `-${input.name}` : ''),
-                    ...(inputs.length > 1 ? { output: output.name } : outputs.length > 1 ? { output: name + outputSpecifier } : {}),
+                    ...(outputs.length > 1 || inputs.length > 1 ? { output: name + outputSpecifier } : {}),
                     message: 'done'
                 })
             })
