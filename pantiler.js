@@ -30,7 +30,7 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
                 outputs: Zod.array(Zod.object({
                     name: Zod.string(),
                     layer: Zod.string(),
-                    fields: Zod.object(),
+                    fields: Zod.object().optional(),
                     additional: Zod.object().optional() // arbitrary extra data which can be included
                 }))
             })),
@@ -190,7 +190,7 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
             }
             const outputData = Gdal.open(file, 'w', 'GeoJSON')
             const outputLayer = outputData.layers.create(`${name}${outputSpecifier}`, null, Gdal.wkbUnknown)
-            const outputFieldDefinitions = Object.keys(output.fields).map(key => {
+            const outputFieldDefinitions = Object.keys(output.fields || {}).map(key => {
                 return new Gdal.FieldDefn(key, Gdal.OFTString)
             })
             outputLayer.fields.add(outputFieldDefinitions)
@@ -205,7 +205,7 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
                 const inputLayer = inputData.layers.get(output.layer)
                 inputLayer.features.forEach(feature => {
                     const outputFeature = new Gdal.Feature(outputLayer)
-                    const outputFields = Object.entries(output.fields).map(([key, value]) => {
+                    const outputFields = Object.entries(output.fields || {}).map(([key, value]) => {
                         try {
                             return [key, feature.fields.get(value)]
                         }
