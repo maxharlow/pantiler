@@ -1,11 +1,11 @@
 import Util from 'util'
-import ChildProcess from 'child_process'
 import FSExtra from 'fs-extra'
 import Zod from 'zod'
 import Axios from 'axios'
 import Unzipper from 'unzipper'
 import Fontnik from 'fontnik'
 import Gdal from 'gdal-next'
+import Tippecanoe from './tippecanoe.js'
 
 function setup(directory, cache = '.pantiler-cache', clearCache = false, alert = () => {}) {
 
@@ -258,9 +258,7 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
             'no-tile-compression',
             ...sourcelist
         ]
-        const args = options.map(x => `--${x}`).join(' ')
-        const logs = await Util.promisify(ChildProcess.exec)(`tippecanoe ${args}`)
-        if (logs.stderr) logs.stderr.trim().split('\n').forEach(message => {
+        await Tippecanoe(options, message => {
             alert({ process: 'tiling', message })
         })
         const metadata = await FSExtra.readJson(`${directory}/metadata.json`)
