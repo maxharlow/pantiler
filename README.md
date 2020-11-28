@@ -57,6 +57,8 @@ Tilefiles are written in Yaml or Json. There is an `example.yaml` included for r
 * `sources` -- an array of sources, described below
 * `styling` -- follows the [Vector Tile Style specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/), though with the `glyphs` and `sources` sections automatically generated, and so onlyneeds to include a `layers` section at a minimum, which should expect a source named `primary`
 
+The styling can be generated with [Maputnik](https://maputnik.github.io/).
+
 Inputs have this format:
 
 * `name` -- A unique name for this input
