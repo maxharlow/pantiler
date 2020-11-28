@@ -33,10 +33,10 @@ Then set it up:
 
 Where:
 
-* `directory` -- where the tiles will be created, should not already exist
-* `cache` (optional) -- the name of a directory where files will be cached, defaults to `.pantiler-cache`
-* `clearCache` (optional) -- whether the cache should be removed after running, boolean, defaults to false
-* `alert` -- (optional) -- a function that will be called with informational messages as Pantiler runs, defaults to doing nothing
+* `directory` Where the tiles will be created, should not already exist.
+* `cache` The name of a directory where files will be cached. Optional. Default is `.pantiler-cache`.
+* `clearCache` Whether the cache should be removed after running. Optional. Default is false.
+* `alert` A function that will be called with informational messages as Pantiler runs. Optional. Default does nothing.
 
 Then run it:
 
@@ -50,41 +50,39 @@ Tilefiles
 
 Tilefiles are written in Yaml or Json. There is an `example.yaml` included for reference.
 
-* `host` -- the location the tiles will be served from
-* `zoomFrom` -- the most zoomed-out level of tiles to generate
-* `zoomTo` -- the most zoomed-in level of tiles to generate
-* `fonts` -- (optional) an array of inputs linking to fonts in TTF or OTF format, which can then be referenced by name in the styling
-* `sprites` -- (optional) an array of  linking to images in SVG format, which can then be referenced by name in the styling
-* `sources` -- an array of sources, described below
-* `styling` -- follows the [Vector Tile Style specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/), though with the `glyphs` and `sources` sections automatically generated, and so onlyneeds to include a `layers` section at a minimum, which should expect a source named `primary`
-
-The styling can be generated with [Maputnik](https://maputnik.github.io/).
+* `host` The location the tiles will be served from.
+* `zoomFrom` The most zoomed-out level of tiles to generate.
+* `zoomTo` The most zoomed-in level of tiles to generate.
+* `fonts` An array of *inputs* specifying fonts in TTF or OTF format, which can then be referenced by name in the styling. Optional.
+* `sprites` An array of *inputs* specifying images in SVG format, which can then be referenced by name in the styling. Optional.
+* `sources` An array of *sources*.
+* `styling` Follows the [Vector Tile Style specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/), though with the `glyphs` and `sources` sections automatically generated, and so only needs to include a `layers` section at a minimum, which should expect a source named `primary`. This can be generated with [Maputnik](https://maputnik.github.io/).
 
 Inputs have this format:
 
-* `name` -- A unique name for this input
-* `url` -- (specify either this or `path`) For a file that should be downloaded from the web
-* `path` -- (specify either this or `url`) For a file that exists somewhere on your computer
-* `format` -- (optional) If the `path`/`url` doesn't end with an extension indicating the file format, give it here
+* `name` A unique name for this input.
+* `url` Specify either this or `path`. For a file that should be downloaded from the web.
+* `path` Specify either this or `url`. For a file that exists somewhere on your computer.
+* `format` If the `path`/`url` doesn't end with an extension indicating the file format, specify it here. Optional.
 
 Inputs are merged together to produce each output. If the file is determined to be a Zip file (either through the extension or specified with `format`) it will be decompressed. Any `pdf` or `txt` files are ignored. If there is only one file left(or the files left constitute a Shapefile) that gets passed through to the next stage. If there are multiple files left then you'll get an error.
 
 Sources have this format:
 
-* `name` -- A unique name for this source
-* `system` -- A [Proj](https://proj.org/) string describing the spatial reference system (note [this FAQ item about axis ordering](https://proj.org/faq.html#why-is-the-axis-ordering-in-proj-not-consistent))
-* `fieldLongitude` -- (optional) If the input is a CSV with longitude/latitude columns, give the column names here
-* `fieldLatitude` -- (optional) If the input is a CSV with longitude/latitude columns, give the column names here
-* `inputs` -- an array of inputs, described above
-* `outputs` -- an array of outputs, described below
+* `name` A unique name for this source.
+* `system` A [Proj](https://proj.org/) string describing the spatial reference system (note [this FAQ item about axis ordering](https://proj.org/faq.html#why-is-the-axis-ordering-in-proj-not-consistent)).
+* `fieldLongitude` For CSV inputs with separate coordinates, specify the longitude column name. Optional.
+* `fieldLatitude` For CSV inputs with separate coordinates, specify the latitude column name. Optional.
+* `inputs` An array of *inputs* specifying geographical data.
+* `outputs` An array of *outputs*.
 
 Outputs have this format:
 
-* `name` -- A unique name for this output, which can then be referenced as a source layer in the styling
-* `layer` -- (optional) The name of the layer from the input that this output should use, defaults to the first layer it finds
-* `fields` -- (optional) An object listing fields you want in the output to the names of those fields in the input layer
-* `zoomMin` -- (optional) The most zoomed-out level of tiles that should include this data
-* `zoomMax` -- (optional) The most zoomed-in level of tiles that should include this data
+* `name` A unique name for this output, which can then be referenced as a source layer in the styling.
+* `layer` The name of the layer from the input that this output should use, defaults to the first layer it finds. Optional.
+* `fields` An object listing fields you want in the output to the names of those fields in the input layer. Optional.
+* `zoomMin` The most zoomed-out level of tiles that should include this data. Optional.
+* `zoomMax` The most zoomed-in level of tiles that should include this data. Optional.
 
 
 Example
@@ -94,7 +92,7 @@ Download the example tilefile:
 
     $ curl https://github.com/maxharlow/pantiler/raw/master/example.yaml > example.yaml
 
-Run Pantiler, putting our tiles into a directory named `tiles`:
+Run Pantiler, putting the output into a directory named `tiles`:
 
     $ npx pantiler example.yaml tiles
 
