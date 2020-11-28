@@ -11,6 +11,7 @@
         "url": "https://github.com/maxharlow/pantiler.git"
     },
     "dependencies": {
+        "@mapbox/spritezero": "7.0.x",
         "axios": "0.21.x",
         "fontnik": "0.6.x",
         "fs-extra": "9.0.x",

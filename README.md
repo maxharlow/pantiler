@@ -53,7 +53,8 @@ Tilefiles are written in Yaml or Json. There is an `example.yaml` included for r
 * `host` -- the location the tiles will be served from
 * `zoomFrom` -- the most zoomed-out level of tiles to generate
 * `zoomTo` -- the most zoomed-in level of tiles to generate
-* `fonts` -- an array of objects with a `name` and `url`, linking to fonts in TTF or OTF format, which can then be referenced by name in the styling
+* `fonts` -- (optional) an array of objects with a `name` and `url`, linking to fonts in TTF or OTF format, which can then be referenced by name in the styling
+* `sprites` -- (optional) an array of objects with a `name` and `path`, linking to images in SVG format, which can then be referenced by name in the styling
 * `sources` -- an array of sources, described below
 * `styling` -- follows the [Vector Tile Style specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/), though with the `glyphs` and `sources` sections automatically generated, and so onlyneeds to include a `layers` section at a minimum, which should expect a source named `primary`
 

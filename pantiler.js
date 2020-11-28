@@ -4,6 +4,7 @@ import Zod from 'zod'
 import Axios from 'axios'
 import Unzipper from 'unzipper'
 import Fontnik from 'fontnik'
+import Spritezero from '@mapbox/spritezero'
 import Gdal from 'gdal-next'
 import Tippecanoe from './tippecanoe.js'
 
@@ -23,7 +24,11 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
             fonts: Zod.array(Zod.object({
                 name: Zod.string(),
                 url: Zod.string().url()
-            })),
+            })).optional(),
+            sprites: Zod.array(Zod.object({
+                name: Zod.string(),
+                path: Zod.string()
+            })).optional(),
             sources: Zod.array(Zod.object({
                 name: Zod.string(),
                 system: Zod.string(),
@@ -75,7 +80,39 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
                 input: font.name,
                 message: 'done'
             })
-            return
+        }, Promise.resolve())
+    }
+
+    async function ensprite(sprites) {
+        const ratios = [1, 2]
+        await ratios.reduce(async (a, ratio) => {
+            await a
+            alert({
+                process: 'enspriting',
+                input: `@${ratio}x`,
+                message: 'starting'
+            })
+            const ratioAt =  ratio > 1 ? `@${ratio}x` : ''
+            const images = sprites.map(async sprite => {
+                return {
+                    id: sprite.path.split('/').pop().replace(/\.svg$/, ''),
+                    svg: await FSExtra.readFile(sprite.path)
+                }
+            })
+            const config = {
+                imgs: await Promise.all(images),
+                pixelRatio: ratio
+            }
+            const manifest = await Util.promisify(Spritezero.generateLayout)({ ...config, format: true })
+            await FSExtra.writeJson(`${directory}/sprites${ratioAt}.json`, manifest)
+            const layout = await Util.promisify(Spritezero.generateLayout)({ ...config, format: false })
+            const image = await Util.promisify(Spritezero.generateImage)(layout)
+            await FSExtra.writeFile(`${directory}/sprites${ratioAt}.png`, image)
+            alert({
+                process: 'enspriting',
+                input: `@${ratio}x`,
+                message: 'done'
+            })
         }, Promise.resolve())
     }
 
@@ -270,13 +307,14 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
         return metadata
     }
 
-    async function style(metadata, styling, host) {
+    async function style(metadata, styling, host, hasFonts, hasSprites) {
         const styles = {
             version: 8,
             metadata: {
                 date: new Date().toISOString()
             },
-            glyphs: `${host}/glyphs/{fontstack}/{range}.pbf`,
+            ...(hasFonts ? { glyphs: `${host}/glyphs/{fontstack}/{range}.pbf` } : {}),
+            ...(hasSprites ? { sprite: `${host}/sprites` } : {}),
             sources: {
                 primary: {
                     type: 'vector',
@@ -304,7 +342,8 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
         validate(tiledata)
         await FSExtra.ensureDir(directory)
         await FSExtra.ensureDir(cache)
-        await englyph(tiledata.fonts)
+        if (tiledata.fonts) await englyph(tiledata.fonts)
+        if (tiledata.sprites) await ensprite(tiledata.sprites)
         await tiledata.sources.reduce(async (previous, source) => {
             await previous
             const archives = await fetch(source.name, source.inputs)
@@ -312,7 +351,7 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
             return convert(source.name, source.system, source.fieldLongitude, source.fieldLatitude, inputs, source.outputs)
         }, Promise.resolve())
         const metadata = await tile(tiledata.sources, tiledata.zoomFrom, tiledata.zoomTo)
-        await style(metadata, tiledata.styling, tiledata.host)
+        await style(metadata, tiledata.styling, tiledata.host, tiledata.fonts?.length > 0, tiledata.sprites?.length > 0)
         await cleanup(clearCache)
         alert({ message: 'done' })
     }
