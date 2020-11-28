@@ -16,6 +16,7 @@
         "fontnik": "0.6.x",
         "fs-extra": "9.0.x",
         "gdal-next": "2.5.x",
+        "scramjet": "4.35.x",
         "tar": "6.0.x",
         "unzipper": "0.10.x",
         "yaml": "1.10.x",

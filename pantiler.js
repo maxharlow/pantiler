@@ -1,6 +1,7 @@
 import Util from 'util'
 import FSExtra from 'fs-extra'
 import Zod from 'zod'
+import Scramjet from 'scramjet'
 import Axios from 'axios'
 import Unzipper from 'unzipper'
 import Fontnik from 'fontnik'
@@ -344,12 +345,11 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
         await FSExtra.ensureDir(cache)
         if (tiledata.fonts) await englyph(tiledata.fonts)
         if (tiledata.sprites) await ensprite(tiledata.sprites)
-        await tiledata.sources.reduce(async (previous, source) => {
-            await previous
+        await Scramjet.DataStream.from(tiledata.sources).each(async source => {
             const archives = await fetch(source.name, source.inputs)
             const inputs = await extract(source.name, archives)
             return convert(source.name, source.system, source.fieldLongitude, source.fieldLatitude, inputs, source.outputs)
-        }, Promise.resolve())
+        }).whenEnd()
         const metadata = await tile(tiledata.sources, tiledata.zoomFrom, tiledata.zoomTo)
         await style(metadata, tiledata.styling, tiledata.host, tiledata.fonts?.length > 0, tiledata.sprites?.length > 0)
         await cleanup(clearCache)
