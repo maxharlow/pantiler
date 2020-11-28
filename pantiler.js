@@ -22,14 +22,8 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
             host: Zod.string().url(),
             zoomFrom: Zod.number().positive(),
             zoomTo: Zod.number().positive(),
-            fonts: Zod.array(Zod.object({
-                name: Zod.string(),
-                url: Zod.string().url()
-            })).optional(),
-            sprites: Zod.array(Zod.object({
-                name: Zod.string(),
-                path: Zod.string()
-            })).optional(),
+            fonts: Zod.array(inputSchema).optional(),
+            sprites: Zod.array(inputSchema).optional(),
             sources: Zod.array(Zod.object({
                 name: Zod.string(),
                 system: Zod.string(),
@@ -59,17 +53,16 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
             })
             const location = `${directory}/glyphs/${font.name}`
             await FSExtra.ensureDir(location)
-            const response = await Axios({
-                url: font.url,
-                responseType: 'arraybuffer'
-            })
+            const data = font.path
+                ? await FSExtra.readFile(font.path)
+                : await (await Axios({ url: font.url, responseType: 'arraybuffer' })).data
             let ranges = []
             for (let i = 0; i < 65536; (i = i + 256)) {
                 ranges.push({ start: i, end: Math.min(i + 255, 65535) })
             }
             const conversions = ranges.map(async range => {
                 const result = await Util.promisify(Fontnik.range)({
-                    font: response.data,
+                    font: data,
                     start: range.start,
                     end: range.end
                 })
@@ -95,9 +88,12 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
             })
             const ratioAt =  ratio > 1 ? `@${ratio}x` : ''
             const images = sprites.map(async sprite => {
+                const data = sprite.path
+                    ? await FSExtra.readFile(sprite.path)
+                    : await (await Axios({ url: sprite.url, responseType: 'arraybuffer' })).data
                 return {
-                    id: sprite.path.split('/').pop().replace(/\.svg$/, ''),
-                    svg: await FSExtra.readFile(sprite.path)
+                    id: sprite.name,
+                    svg: data
                 }
             })
             const config = {
