@@ -20,7 +20,10 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
             host: Zod.string().url(),
             zoomFrom: Zod.number().positive(),
             zoomTo: Zod.number().positive(),
-            fonts: Zod.array(inputSchema),
+            fonts: Zod.array(Zod.object({
+                name: Zod.string(),
+                url: Zod.string().url()
+            })),
             sources: Zod.array(Zod.object({
                 name: Zod.string(),
                 system: Zod.string(),
