@@ -5,8 +5,8 @@ import Scramjet from 'scramjet'
 import Axios from 'axios'
 import Unzipper from 'unzipper'
 import Fontnik from 'fontnik'
-import Spritezero from '@mapbox/spritezero'
 import Gdal from 'gdal-next'
+import Spritezero from '@mapbox/spritezero'
 import Tippecanoe from './tippecanoe.js'
 
 function setup(directory, cache = '.pantiler-cache', clearCache = false, alert = () => {}) {
