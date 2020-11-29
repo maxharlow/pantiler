@@ -4,15 +4,24 @@ import FSExtra from 'fs-extra'
 import Yaml from 'yaml'
 import pantiler from './pantiler.js'
 
-function alert({ process, input, output, message }) {
-    const elements = [
-        process,
-        input && ` ${input}`,
-        output && ` -> ${output}`,
-        (process || input || output) && ': ',
-        message
-    ]
-    console.error(elements.filter(x => x).join(''))
+function alert() {
+    let lines = {}
+    return ({ process, input, output, message }) => {
+        const key = [process, input, output].filter(x => x).join('-')
+        const elements = [
+            process,
+            input && ` ${input}`,
+            output && ` -> ${output}`,
+            (process || input || output) && ': ',
+            message
+        ]
+        if (Object.values(lines).length > 0) Process.stderr.moveCursor(0, -Object.values(lines).length)
+        lines[key] = elements.filter(x => x).join('')
+        Object.values(lines).forEach(line => {
+            Process.stderr.clearLine()
+            Process.stderr.write(line + '\n')
+        })
+    }
 }
 
 async function setup() {
@@ -30,7 +39,7 @@ async function setup() {
         } = instructions.argv
         const tilefile = await FSExtra.readFile(tilefileName, 'utf8')
         const tiledata = Yaml.parse(tilefile)
-        await pantiler(directory, '.pantiler-cache', clearCache, alert)(tiledata)
+        await pantiler(directory, '.pantiler-cache', clearCache, alert())(tiledata)
     }
     catch (e) {
         if (e.constructor.name === 'ZodError') {

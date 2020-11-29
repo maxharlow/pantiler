@@ -49,7 +49,7 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
             alert({
                 process: 'englyphing',
                 input: font.name,
-                message: 'starting'
+                message: 'in progress...'
             })
             const location = `${directory}/glyphs/${font.name}`
             await FSExtra.ensureDir(location)
@@ -84,7 +84,7 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
             alert({
                 process: 'enspriting',
                 input: `@${ratio}x`,
-                message: 'starting'
+                message: 'in progress...'
             })
             const ratioAt =  ratio > 1 ? `@${ratio}x` : ''
             const images = sprites.map(async sprite => {
@@ -140,7 +140,7 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
             alert({
                 process: 'fetching',
                 input: name + inputSpecifier,
-                message: 'starting'
+                message: 'in progress...'
             })
             const response = await Axios({
                 url: input.url,
@@ -187,7 +187,7 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
                     process: 'extracting',
                     input: name + archiveSpecifier,
                     ...(entries.length > 1 ? { output: name + (entries.length > 1 ? `/${extension}` : '') } : {}),
-                    message: 'starting'
+                    message: 'in progress...'
                 })
                 const writer = entry.stream().pipe(FSExtra.createWriteStream(file))
                 await new Promise((resolve, reject) => {
@@ -237,7 +237,7 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
                     process: 'converting',
                     input: name + (inputs.length > 1 ? `-${input.name}` : ''),
                     ...(outputs.length > 1 || inputs.length > 1 ? { output: name + outputSpecifier } : {}),
-                    message: 'starting'
+                    message: 'in progress...'
                 })
                 const inputData = Gdal.open(input.path)
                 const inputLayer = inputData.layers.get(output.layer || 0)
@@ -280,7 +280,7 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
     }
 
     async function tile(sources, zoomFrom, zoomTo) {
-        alert({ process: 'tiling', message: 'starting' })
+        alert({ process: 'tiling', message: 'in progress...' })
         const sourcelist = sources.flatMap(source => {
             return source.outputs.map(output => {
                 const outputSpecifier = source.outputs.length > 1 ? `-${output.name}` : ''
