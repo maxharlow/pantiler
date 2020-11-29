@@ -90,7 +90,7 @@ Example
 
 Download the example tilefile:
 
-    $ curl https://github.com/maxharlow/pantiler/raw/master/example.yaml > example.yaml
+    $ curl -L https://github.com/maxharlow/pantiler/raw/master/example.yaml > example.yaml
 
 Run Pantiler, putting the output into a directory named `tiles`:
 
@@ -98,7 +98,7 @@ Run Pantiler, putting the output into a directory named `tiles`:
 
 Download the example tile viewer:
 
-    $ curl https://github.com/maxharlow/pantiler/raw/master/example.html > example.html
+    $ curl -L https://github.com/maxharlow/pantiler/raw/master/example.html > example.html
 
 Serve the tiles and viewer locally:
 
