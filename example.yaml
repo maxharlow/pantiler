@@ -7,6 +7,10 @@ fonts:
   - name: opensans-regular
     url: https://github.com/google/fonts/raw/master/apache/opensans/OpenSans-Regular.ttf
 
+sprites:
+  - name: star
+    url: https://github.com/google/material-design-icons/raw/master/src/action/stars/materialicons/24px.svg
+
 sources:
   - name: openmap
     system: '+init=epsg:27700 +proj=axisswap +order=2,1'
@@ -25,6 +29,16 @@ sources:
             name: distinctiveName
       - name: railway-tracks
         layer: RailwayTrack
+  - name: bus-stops
+    system: '+init=epsg:27700'
+    fieldLongitude: Location_Easting
+    fieldLatitude: Location_Northing
+    inputs:
+      - name: london
+        url: https://tfl.gov.uk/cdn/static/cms/documents/bus-stops-example.csv
+    outputs:
+      - name: bus-stops
+        zoomMin: 13
 
 styling:
     layers:
@@ -74,3 +88,9 @@ styling:
         paint:
             line-color: '#dbdddf'
             line-width: 1.5
+      - id: bus-stops
+        type: symbol
+        source: primary
+        source-layer: bus-stops
+        layout:
+            icon-image: star
