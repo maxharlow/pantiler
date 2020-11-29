@@ -1,4 +1,6 @@
 import Util from 'util'
+import Path from 'path'
+import URL from 'url'
 import Process from 'process'
 import ChildProcess from 'child_process'
 import Readline from 'readline'
@@ -65,8 +67,9 @@ async function install() {
         url: binary.location,
         responseType: 'stream'
     })
+    const bin = Path.resolve(Path.dirname(URL.fileURLToPath(import.meta.url), 'node_modules', '.bin'))
     const extractor = Tar.extract({
-        cwd: 'node_modules/.bin/',
+        cwd: bin,
         filter: path => path.endsWith('bin/tippecanoe'),
         strip: 3
     })
@@ -75,9 +78,10 @@ async function install() {
 }
 
 async function run(options, alert = () => {}) {
+    const bin = Path.resolve(Path.dirname(URL.fileURLToPath(import.meta.url), 'node_modules', '.bin'))
     const env = {
         ...Process.env,
-        PATH: `node_modules/.bin:${Process.env.PATH}`
+        PATH: `${bin}:${Process.env.PATH}`
     }
     try {
         await Util.promisify(ChildProcess.execFile)('tippecanoe', ['-v'], { env })
