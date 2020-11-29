@@ -79,7 +79,7 @@ Sources have this format:
 Outputs have this format:
 
 * `name` A unique name for this output, which can then be referenced as a source layer in the styling.
-* `layer` The name of the layer from the input that this output should use, defaults to the first layer it finds. Optional.
+* `layer` The name of the input layer that this output should use. Optional. Default is the first layer it finds.
 * `fields` An object listing fields you want in the output to the names of those fields in the input layer. Optional.
 * `zoomMin` The most zoomed-out level of tiles that should include this data. Optional.
 * `zoomMax` The most zoomed-in level of tiles that should include this data. Optional.
