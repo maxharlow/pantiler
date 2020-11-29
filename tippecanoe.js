@@ -67,18 +67,18 @@ async function install() {
         url: binary.location,
         responseType: 'stream'
     })
-    const bin = Path.resolve(Path.dirname(URL.fileURLToPath(import.meta.url), 'node_modules', '.bin'))
+    const bin = Path.resolve(Path.dirname(URL.fileURLToPath(import.meta.url)), 'node_modules', '.bin')
     const extractor = Tar.extract({
         cwd: bin,
         filter: path => path.endsWith('bin/tippecanoe'),
         strip: 3
     })
     await Util.promisify(Stream.pipeline)(response.data, extractor)
-    console.error(`installed Tippecanoe v${binary.version}`)
+    console.error(`installed Tippecanoe v${binary.version} to ${bin.toString()}`)
 }
 
 async function run(options, alert = () => {}) {
-    const bin = Path.resolve(Path.dirname(URL.fileURLToPath(import.meta.url), 'node_modules', '.bin'))
+    const bin = Path.resolve(Path.dirname(URL.fileURLToPath(import.meta.url)), 'node_modules', '.bin')
     const env = {
         ...Process.env,
         PATH: `${bin}:${Process.env.PATH}`
