@@ -36,7 +36,7 @@ Where:
 * `directory` Where the tiles will be created, should not already exist.
 * `cache` The name of a directory where files will be cached. Optional. Default is `.pantiler-cache`.
 * `clearCache` Whether the cache should be removed after running. Optional. Default is false.
-* `alert` A function that will be called with informational messages as Pantiler runs. Optional. Default does nothing.
+* `alert` A function to be called with informational messages as Pantiler runs. Optional. Default does nothing.
 
 Then run it:
 
