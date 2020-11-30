@@ -1,5 +1,6 @@
 import Process from 'process'
 import Yargs from 'yargs'
+import Chalk from 'chalk'
 import FSExtra from 'fs-extra'
 import Yaml from 'yaml'
 import pantiler from './pantiler.js'
@@ -9,11 +10,11 @@ function alert() {
     return ({ process, input, output, message }) => {
         const key = [process, input, output].filter(x => x).join('-')
         const elements = [
-            process,
+            process && Chalk.blue(process),
             input && ` ${input}`,
             output && ` -> ${output}`,
             (process || input || output) && ': ',
-            message
+            message === 'done' ? Chalk.green(message) : message === 'in progress...' ? Chalk.yellow(message) : Chalk.magenta(message)
         ]
         if (Object.values(lines).length > 0) Process.stderr.moveCursor(0, -Object.values(lines).length)
         lines[key] = elements.filter(x => x).join('')
@@ -53,7 +54,7 @@ async function setup() {
                 console.error(`  ${path}${path ? ': ' : ''}${error.message.toLowerCase()}`)
             })
         }
-        else console.error(e.message)
+        else console.error(Chalk.red(e.message))
         Process.exit(1)
     }
 }

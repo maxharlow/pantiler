@@ -12,6 +12,7 @@
     "dependencies": {
         "@mapbox/spritezero": "7.0.x",
         "axios": "0.21.x",
+        "chalk": "4.1.x",
         "fontnik": "0.6.x",
         "fs-extra": "9.0.x",
         "gdal-next": "2.5.x",
