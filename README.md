@@ -29,13 +29,14 @@ Pantiler can also be used as a library. To import it:
 
 Then set it up:
 
-    const pantiler = Pantiler(directory, cache, clearCache, alert)
+    const pantiler = Pantiler(directory, cache, clearCache, bounds, alert)
 
 Where:
 
 * `directory` Where the tiles will be created, should not already exist.
 * `cache` The name of a directory where files will be cached. Optional. Default is `.pantiler-cache`.
-* `clearCache` Whether the cache should be removed after running. Optional. Default is false.
+* `clearCache` Remove the cache after completing. Optional. Default is false.
+* `bounds` A set of coordinates to clip the data with as `minLong,minLat,maxLong,maxLat` (using WGS84). Optional.
 * `alert` A function to be called with informational messages as Pantiler runs. Optional. Default does nothing.
 
 Then run it:

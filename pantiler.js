@@ -9,7 +9,7 @@ import Gdal from 'gdal-next'
 import Spritezero from '@mapbox/spritezero'
 import Tippecanoe from './tippecanoe.js'
 
-function setup(directory, cache = '.pantiler-cache', clearCache = false, alert = () => {}) {
+function setup(directory, cache = '.pantiler-cache', clearCache = false, bounds = null, alert = () => {}) {
 
     function validate(tiledata) {
         const inputSchema = Zod.object({
@@ -241,6 +241,12 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
                 })
                 const inputData = Gdal.open(input.path)
                 const inputLayer = inputData.layers.get(output.layer || 0)
+                if (bounds) {
+                    const reprojectionReverse = new Gdal.CoordinateTransformation(Gdal.SpatialReference.fromProj4('+init=epsg:4326'), Gdal.SpatialReference.fromProj4(system))
+                    const min = reprojectionReverse.transformPoint(bounds[0], bounds[1])
+                    const max = reprojectionReverse.transformPoint(bounds[2], bounds[3])
+                    inputLayer.setSpatialFilter(min.x, min.y, max.x, max.y)
+                }
                 inputLayer.features.forEach(feature => {
                     const outputFeature = new Gdal.Feature(outputLayer)
                     const outputFields = Object.entries(output.fields || {}).map(([key, value]) => {
@@ -291,6 +297,7 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, alert =
             `minimum-zoom=${zoomFrom}`,
             `maximum-zoom=${zoomTo}`,
             `output-to-directory=${directory}`,
+            ...(bounds ? [`clip-bounding-box=${bounds.join(',')}`] : []),
             'generate-ids',
             'no-tile-compression',
             ...sourcelist

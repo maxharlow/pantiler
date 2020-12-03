@@ -30,17 +30,19 @@ async function setup() {
         .usage('Usage: pantiler <tilefile> <directory>')
         .wrap(null)
         .option('c', { alias: 'clear-cache', type: 'boolean', default: false, describe: 'Remove the cache after completing' })
+        .option('b', { alias: 'bounds', type: 'string', describe: 'A set of coordinates to clip the data with as minLong,minLat,maxLong,maxLat (using WGS84)' })
         .help('?').alias('?', 'help')
         .version().alias('v', 'version')
         .demandCommand(2, '')
     try {
         const {
             _: [tilefileName, directory],
-            clearCache
+            clearCache,
+            bounds
         } = instructions.argv
         const tilefile = await FSExtra.readFile(tilefileName, 'utf8')
         const tiledata = Yaml.parse(tilefile)
-        await pantiler(directory, '.pantiler-cache', clearCache, alert())(tiledata)
+        await pantiler(directory, '.pantiler-cache', clearCache, bounds.split(',').map(Number), alert())(tiledata)
     }
     catch (e) {
         if (e.constructor.name === 'ZodError') {
