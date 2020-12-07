@@ -6,6 +6,7 @@ import ChildProcess from 'child_process'
 import Readline from 'readline'
 import OS from 'os'
 import Stream from 'stream'
+import FSExtra from 'fs-extra'
 import Tar from 'tar'
 import Axios from 'axios'
 
@@ -68,6 +69,7 @@ async function install() {
         responseType: 'stream'
     })
     const bin = Path.resolve(Path.dirname(URL.fileURLToPath(import.meta.url)), 'node_modules', '.bin')
+    await FSExtra.ensureDir(bin)
     const extractor = Tar.extract({
         cwd: bin,
         filter: path => path.endsWith('bin/tippecanoe'),
