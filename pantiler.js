@@ -330,7 +330,7 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, bounds 
             },
             ...styling
         }
-        alert({ Process: 'styling', message: 'done' })
+        alert({ process: 'Styling', message: 'done' })
         return FSExtra.writeJson(`${directory}/style.json`, styles)
     }
 
