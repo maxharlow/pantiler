@@ -26,7 +26,7 @@
     "scripts": {
         "postinstall": "node --input-type=module --eval='import { install } from \"./tippecanoe.js\"; install()'"
     },
-    "main": "pantiler.js",
+    "exports": "./pantiler.js",
     "bin": {
         "pantiler": "./bin.js"
     }
