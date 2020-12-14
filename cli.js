@@ -42,7 +42,7 @@ async function setup() {
         } = instructions.argv
         const tilefile = await FSExtra.readFile(tilefileName, 'utf8')
         const tiledata = Yaml.parse(tilefile)
-        await pantiler(directory, '.pantiler-cache', clearCache, bounds.split(',').map(Number), alert())(tiledata)
+        await pantiler(directory, '.pantiler-cache', clearCache, bounds?.split(',').map(Number), alert())(tiledata)
     }
     catch (e) {
         if (e.constructor.name === 'ZodError') {
