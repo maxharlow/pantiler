@@ -42,7 +42,13 @@ async function setup() {
         } = instructions.argv
         const tilefile = await FSExtra.readFile(tilefileName, 'utf8')
         const tiledata = Yaml.parse(tilefile)
-        await pantiler(directory, '.pantiler-cache', clearCache, bounds?.split(',').map(Number), alert())(tiledata)
+        const cacheName = '.pantiler-cache'
+        const cacheExists = await FSExtra.exists(cacheName)
+        await pantiler(directory, cacheName, clearCache, bounds?.split(',').map(Number), alert())(tiledata)
+        if (!clearCache && !cacheExists) {
+            console.error()
+            console.error(Chalk.inverse(Chalk.yellow(' NOTE ')) + ` A cache directory named '${cacheName}' was created with intermediate files produced whilst tiling. Those files will be reused on subsequent invocations of Pantiler, but they should be removed otherwise as they can take up a lot of space. They can be removed automatically after Pantiler runs using --clear-cache.`)
+        }
     }
     catch (e) {
         if (e.constructor.name === 'ZodError') {
