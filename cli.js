@@ -14,7 +14,7 @@ function alert() {
             input && ` ${input}`,
             output && ` -> ${output}`,
             (process || input || output) && ': ',
-            message === 'done' ? Chalk.green(message) : message === 'in progress...' ? Chalk.yellow(message) : Chalk.magenta(message)
+            message.toLowerCase().startsWith('done') ? Chalk.green(message) : message.startsWith('in progress...') ? Chalk.yellow(message) : Chalk.magenta(message)
         ]
         if (Object.values(lines).length > 0) Process.stderr.moveCursor(0, -Object.values(lines).length)
         lines[key] = elements.filter(x => x).join('')

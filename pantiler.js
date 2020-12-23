@@ -302,8 +302,8 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, bounds 
             'no-tile-compression',
             ...sourcelist
         ]
-        await Tippecanoe(options, message => {
-            alert({ process: 'Tiling', message })
+        await Tippecanoe(options, status => {
+            alert({ process: 'Tiling', message: `in progress... ${status}` })
         })
         const metadata = await FSExtra.readJson(`${directory}/metadata.json`)
         await FSExtra.remove(`${directory}/metadata.json`)
