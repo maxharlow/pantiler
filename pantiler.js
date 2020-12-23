@@ -146,8 +146,7 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, bounds 
                 url: input.url,
                 responseType: 'stream'
             })
-            const writer = FSExtra.createWriteStream(file)
-            response.data.pipe(writer)
+            const writer = response.data.pipe(FSExtra.createWriteStream(file))
             await new Promise((resolve, reject) => {
                 writer.on('error', reject)
                 writer.on('close', resolve)
