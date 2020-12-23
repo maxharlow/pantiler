@@ -62,7 +62,7 @@ async function setup() {
                 console.error(`  ${path}${path ? ': ' : ''}${error.message.toLowerCase()}`)
             })
         }
-        else console.error(Chalk.red(e.message))
+        else console.error(Chalk.red(`Error: ${e.message}`))
         Process.exit(1)
     }
 }
