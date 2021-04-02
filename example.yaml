@@ -16,7 +16,7 @@ sources:
     system: '+init=epsg:27700 +proj=axisswap +order=2,1'
     inputs:
       - name: gb
-        url: 'https://osdatahubapi.os.uk/downloads/v1/products/OpenMapLocal/downloads?redirect&area=GB&format=GeoPackage'
+        url: 'https://api.os.uk/downloads/v1/products/OpenMapLocal/downloads?redirect&area=GB&format=GeoPackage'
         format: zip
     outputs:
       - name: water-tidal
