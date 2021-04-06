@@ -5,7 +5,7 @@ zoomTo: 15
 
 fonts:
   - name: opensans-regular
-    url: https://github.com/google/fonts/raw/master/apache/opensans/OpenSans-Regular.ttf
+    url: https://github.com/google/fonts/raw/main/apache/opensans/OpenSans[wdth,wght].ttf
 
 sprites:
   - name: star
