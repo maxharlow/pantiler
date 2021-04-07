@@ -33,6 +33,7 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, bounds 
                 outputs: Zod.array(Zod.object({
                     name: Zod.string(),
                     layer: Zod.string().optional(),
+                    filter: Zod.string().optional(),
                     fields: Zod.object().optional(),
                     zoomMin: Zod.number().optional(),
                     zoomMax: Zod.number().optional()
@@ -239,7 +240,9 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, bounds 
                     message: 'in progress...'
                 })
                 const inputData = Gdal.open(input.path)
-                const inputLayer = inputData.layers.get(output.layer || 0)
+                const inputLayer = output.filter
+                    ? inputData.executeSQL(`select * from "${output.layer || inputData.layers.get(0).name}" where ${output.filter}`) // produces correct results, unlike using setAttributeFilter()
+                    : inputData.layers.get(output.layer || 0)
                 if (bounds) {
                     const reprojectionReverse = new Gdal.CoordinateTransformation(Gdal.SpatialReference.fromProj4('+init=epsg:4326'), Gdal.SpatialReference.fromProj4(system))
                     const min = reprojectionReverse.transformPoint(bounds[0], bounds[1])
