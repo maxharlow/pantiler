@@ -20,7 +20,7 @@ function alert() {
         lines[key] = elements.filter(x => x).join('')
         Object.values(lines).forEach(line => {
             Process.stderr.clearLine()
-            Process.stderr.write(line + '\n')
+            Process.stderr.write(line.slice(0, Process.stderr.columns) + '\n')
         })
     }
 }

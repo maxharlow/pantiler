@@ -100,7 +100,7 @@ async function run(options, alert = () => {}) {
         reader.on('line', text => {
             if (text.startsWith('Usage')) error = true
             if (error) return
-            const message = text.replace(':', '').trim().toLowerCase()
+            const message = text.trim().toLowerCase()
             if (message) alert(message)
         })
     }
