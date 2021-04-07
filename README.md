@@ -65,6 +65,7 @@ Inputs have this format:
 * `url` Specify either this or `path`. For a file that should be downloaded from the web.
 * `path` Specify either this or `url`. For a file that exists somewhere on your computer.
 * `format` If the `path`/`url` doesn't end with an extension indicating the file format, specify it here. Optional.
+* `matching` For archives containing multiple files specify a regular expression here to match which to use. Optional.
 
 Inputs are merged together to produce each output. If the file is determined to be a Zip file (either through the extension or specified with `format`) it will be decompressed. Any `pdf` or `txt` files are ignored. If there is only one file left(or the files left constitute a Shapefile) that gets passed through to the next stage. If there are multiple files left then you'll get an error.
 

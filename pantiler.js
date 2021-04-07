@@ -16,7 +16,8 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, bounds 
             name: Zod.string(),
             url: Zod.string().url().optional(), // otherwise use path
             path: Zod.string().optional(), // otherwise use url
-            format: Zod.string().optional()
+            format: Zod.string().optional(),
+            matching: Zod.string().optional()
         })
         const schema = Zod.object({
             host: Zod.string().url(),
@@ -127,7 +128,11 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, bounds 
                     input: name + inputSpecifier,
                     message: 'using cache'
                 })
-                return { name: input.name, path: file }
+                return {
+                    name: input.name,
+                    path: file,
+                    ...(input.matching ? { matching: input.matching } : {})
+                }
             }
             if (input.path) {
                 await FSExtra.ensureSymlink(input.path, file)
@@ -136,7 +141,11 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, bounds 
                     input: name + inputSpecifier,
                     message: 'linked'
                 })
-                return { name: input.name, path: file }
+                return {
+                    name: input.name,
+                    path: file,
+                    ...(input.matching ? { matching: input.matching } : {})
+                }
             }
             alert({
                 process: 'Fetching',
@@ -157,7 +166,11 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, bounds 
                 input: name + inputSpecifier,
                 message: 'done'
             })
-            return { name: input.name, path: file }
+            return {
+                name: input.name,
+                path: file,
+                ...(input.matching ? { matching: input.matching } : {})
+            }
         })
         return Promise.all(downloads)
     }
@@ -169,7 +182,12 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, bounds 
             }
             const archiveSpecifier = archives.length > 1 ? `-${archive.name}` : ''
             const zip = await Unzipper.Open.file(archive.path)
-            const entries = zip.files.filter(entry => entry.type === 'File' && !entry.path.match(/\.(pdf|txt)$/))
+            const entries = zip.files.filter(entry => {
+                if (entry.type !== 'File') return false
+                if (entry.path.match(/\.(pdf|txt)$/)) return false
+                if (archive.matching && !entry.path.match(new RegExp(archive.matching))) return false
+                return true
+            })
             const extractions = entries.map(async entry => {
                 const extension = entry.path.split('.').pop()
                 const file = `${cache}/${name}${archiveSpecifier}.${extension}`
@@ -205,7 +223,7 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, bounds 
             const extracted = await Promise.all(extractions)
             if (extracted.length === 1) return extracted[0]
             else if (extracted.find(file => file.path.endsWith('shp'))) return extracted.find(file => file.path.endsWith('shp'))
-            else throw new Error(`${name}${archiveSpecifier}: archive has multiple files, unclear which to use`)
+            else throw new Error(`${name}${archiveSpecifier}: archive has multiple files, you need to specify a input matching`)
         })
         return Promise.all(extractions)
     }
