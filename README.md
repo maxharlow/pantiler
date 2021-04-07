@@ -108,3 +108,5 @@ Serve the tiles and viewer locally:
     $ npx local-web-server --hostname localhost --port 8080
 
 You should now be able to see a map at [localhost:8080/example.html](http://localhost:8080/example.html).
+
+There is also another example tilefile, `example2.yaml`, based on OpenStreetMap data.

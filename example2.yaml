@@ -1,0 +1,86 @@
+host: http://localhost:8080/tiles
+
+zoomFrom: 12
+zoomTo: 15
+
+fonts:
+  - name: opensans-regular
+    url: https://github.com/google/fonts/raw/main/apache/opensans/OpenSans[wdth,wght].ttf
+
+sources:
+  - name: osm
+    system: '+init=epsg:4326'
+    inputs:
+      - name: london
+        url: https://download.geofabrik.de/europe/great-britain/england/greater-london-latest.osm.pbf
+    outputs:
+      - name: water
+        layer: multipolygons
+        filter: "natural = 'water'"
+      - name: roads
+        layer: lines
+        filter: "highway is not null and highway not in ('corridor', 'steps', 'footway', 'cycleway')"
+        fields:
+            name: name
+      - name: railway-tracks
+        layer: lines
+        filter: "hstore_get_value(other_tags, 'railway') is not null and hstore_get_value(other_tags, 'railway') not in ('disused', 'dismantled', 'abandoned', 'construction', 'proposed', 'subway', 'platform', 'platform_edge') and hstore_get_value(other_tags, 'tunnel') is null"
+  - name: os-greenspace
+    system: '+init=epsg:27700'
+    inputs:
+      - name: gb
+        url: 'https://api.os.uk/downloads/v1/products/OpenGreenspace/downloads?redirect&area=GB&format=ESRI%C2%AE+Shapefile'
+        format: zip
+        matching: GB/data/GB_GreenspaceSite
+    outputs:
+      - name: parks
+        filter: "function = 'Public Park Or Garden'"
+
+styling:
+    layers:
+      - id: background
+        type: background
+        paint:
+            background-color: '#e8eaed'
+      - id: parks
+        type: fill
+        source: primary
+        source-layer: parks
+        paint:
+            fill-color: '#bdddc2'
+      - id: water
+        type: fill
+        source: primary
+        source-layer: water
+        paint:
+            fill-color: '#a2c0f4'
+      - id: roads
+        type: line
+        source: primary
+        source-layer: roads
+        layout:
+            line-join: round
+            line-cap: round
+        paint:
+            line-color: '#ffffff'
+            line-width: 2
+      - id: road-names
+        type: symbol
+        source: primary
+        source-layer: roads
+        minzoom: 14
+        layout:
+            symbol-placement: line
+            text-field: '{name}'
+            text-font:
+              - opensans-regular
+            text-size: 10
+        paint:
+            text-color: '#697276'
+      - id: railway-tracks
+        type: line
+        source: primary
+        source-layer: railway-tracks
+        paint:
+            line-color: '#dbdddf'
+            line-width: 1.5
