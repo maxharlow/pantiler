@@ -52,31 +52,33 @@ const binaries = [
 ]
 
 async function install() {
-    const platform = OS.platform()
-    const release = OS.release().split('.')[0]
-    const architecture = OS.arch()
-    const binary = binaries.find(binary => {
-        return binary.platform === platform
-            && (binary.release && binary.release === release)
-            && binary.architecture === architecture
-    })
-    if (!binary) {
-        console.error('no Tippecanoe binary suitable for this machine could not be downloaded -- please ensure it is installed locally')
-        return
+    try {
+        const platform = OS.platform()
+        const release = OS.release().split('.')[0]
+        const architecture = OS.arch()
+        const binary = binaries.find(binary => {
+            return binary.platform === platform
+                && (binary.release && binary.release === release)
+                && binary.architecture === architecture
+        })
+        if (!binary) throw new Error('no binary suitable for this machine could be found')
+        const response = await Axios({
+            url: binary.location,
+            responseType: 'stream'
+        })
+        const bin = Path.resolve(Path.dirname(URL.fileURLToPath(import.meta.url)), 'node_modules', '.bin')
+        await FSExtra.ensureDir(bin)
+        const extractor = Tar.extract({
+            cwd: bin,
+            filter: path => path.endsWith('bin/tippecanoe'),
+            strip: 3
+        })
+        await Util.promisify(Stream.pipeline)(response.data, extractor)
+        console.error(`installed Tippecanoe v${binary.version} to ${bin.toString()}`)
     }
-    const response = await Axios({
-        url: binary.location,
-        responseType: 'stream'
-    })
-    const bin = Path.resolve(Path.dirname(URL.fileURLToPath(import.meta.url)), 'node_modules', '.bin')
-    await FSExtra.ensureDir(bin)
-    const extractor = Tar.extract({
-        cwd: bin,
-        filter: path => path.endsWith('bin/tippecanoe'),
-        strip: 3
-    })
-    await Util.promisify(Stream.pipeline)(response.data, extractor)
-    console.error(`installed Tippecanoe v${binary.version} to ${bin.toString()}`)
+    catch (e) {
+        console.error(`error installing Tippecanoe: ${e.message.toLowerCase()} -- please ensure it is installed locally`)
+    }
 }
 
 async function run(options, alert = () => {}) {
