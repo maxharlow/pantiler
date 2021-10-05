@@ -1,6 +1,6 @@
 import Util from 'util'
 import FSExtra from 'fs-extra'
-import Zod from 'zod'
+import * as Zod from 'zod'
 import Scramjet from 'scramjet'
 import Axios from 'axios'
 import Unzipper from 'unzipper'
@@ -35,12 +35,12 @@ function setup(directory, cache = '.pantiler-cache', clearCache = false, bounds 
                     name: Zod.string(),
                     layer: Zod.string().optional(),
                     filter: Zod.string().optional(),
-                    fields: Zod.object().optional(),
+                    fields: Zod.object({}).optional(),
                     zoomMin: Zod.number().optional(),
                     zoomMax: Zod.number().optional()
                 }))
             })),
-            styling: Zod.object() // not attempting to validate this
+            styling: Zod.object({}) // not attempting to validate this
         })
         schema.parse(tiledata)
     }

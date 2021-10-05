@@ -10,18 +10,18 @@
         "url": "https://github.com/maxharlow/pantiler.git"
     },
     "dependencies": {
-        "@mapbox/spritezero": "7.0.x",
-        "axios": "0.21.x",
+        "@mapbox/spritezero": "8.0.x",
+        "axios": "0.22.x",
         "chalk": "4.1.x",
         "fontnik": "0.6.x",
-        "fs-extra": "9.1.x",
-        "gdal-next": "2.6.x",
-        "scramjet": "4.35.x",
+        "fs-extra": "10.0.x",
+        "gdal-next": "2.8.x",
+        "scramjet": "4.36.x",
         "tar": "6.1.x",
         "unzipper": "0.10.x",
         "yaml": "1.10.x",
-        "yargs": "16.2.x",
-        "zod": "1.11.x"
+        "yargs": "17.2.x",
+        "zod": "3.9.x"
     },
     "scripts": {
         "postinstall": "node --input-type=module --eval='import { install } from \"./tippecanoe.js\"; install()'"
